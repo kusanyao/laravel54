@@ -6,16 +6,16 @@ namespace App\Http\Controllers\Wechat;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App/Model/User;
+use App\Model\User as UserModel;
 
 class User extends Controller
 {
 	/**
 	 * 用户详情页面
 	 */
-    public function info($id)
+    public function info()
     {
-
+        die('sf');
     }
 
     /**

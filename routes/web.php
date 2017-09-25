@@ -18,7 +18,7 @@ Route::get('/', function () {
 /**
  * www
  */
-Route::group(['domain'=>'www.laravel54.com','namespace'=>'Www'],function(){
+Route::group(['domain'=>'www.lakegouwu.cn','namespace'=>'Www'],function(){
 	// 用户信息 ,userinfo
 	Route::get('userinfo/{id}', ['uses'=>'User@info','as'=>'userinfo'])->where('id','[0-9]+');
 });
@@ -26,9 +26,9 @@ Route::group(['domain'=>'www.laravel54.com','namespace'=>'Www'],function(){
 /**
  * Wechat
  */
-Route::group(['domain'=>'wx.laravel54.com','namespace'=>'Wechat'],function(){
+Route::group(['domain'=>'wx.lakegouwu.cn','namespace'=>'Wechat'],function(){
 	// 用户信息 ,userinfo
-	Route::get('userinfo/{id}', ['uses'=>'User@info','as'=>'userinfo'])->where('id','[0-9]+');
+	Route::get('userinfo', ['uses'=>'User@info','as'=>'userinfo']);
 
 	// 用户注册
 	Route::get('register', ['uses'=>'Wechat@register','as'=>'register']);

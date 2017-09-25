@@ -2,75 +2,58 @@
 
 namespace App\Logic;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Logic\User as UserLogic;
 
 class Auth
 {
-	
-    private $appid  = 'wxa4ecb0681fba754c';
-    private $appsecret = '093743fe335eb4371e6001e342d05cbf';
-
-    private $getCodeUrl = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect';
-
-    private $getTokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code';
-
-    private $refreshTokenUrl = 'https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN ';
-
-    private $getUserinfoUrl = 'https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN';
-
-    private $getJsTicketUrl = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=ACCESS_TOKEN&type=jsapi';
-
-    private $Sessionkey = 'com.yuejie.m.wechat_return_url';
-
+	/**
+	 * 认证微信登录
+	 */
+	public function authWechatByUserinfo(Array $userinfo)
+	{
+		// 判断是否存在微信用户
+		$wechatTable = DB::table('wechat');
+		$id = $wechatTable->where('openid',$userinfo['openid'])->value('id');
+		$userinfo['privilege'] = json_encode($userinfo['privilege']);
+			$userinfo['updated_at'] = time();
+		if( $id > 0 ){
+			$wechatTable->where('id',$id)->update($userinfo);
+		}else{
+			$userinfo['created_at'] = time();
+			$id = $wechatTable->insertGetId($userinfo);
+		}
+		$userinfo['id'] = $id;
+		session('wechat',$userinfo);
+		return $id;
+	}
 
 	/**
-	 * 帐号密码登录
+	 * 根据微信信息认证用户登录
 	 */
-    public function login($username,$password)
-    {
+	public static function authUserByWechat()
+	{
+		$wechat = session('auth_wechat');
+		var_dump($wechat);die;
+		$userTable = DB::table('user');
+		$user = $userTable->where('wechat',$wechat['id'])->first();
+		if(empty($user)){
+			$userLogic = new UserLogic();
+			$user = $userLogic->createUserByWechat($wechat);
+		}
+		session('user',$user);
+	}
 
-    }
-
-    /**
-     * 微信登录
-     */
-    public function loginWechat($id)
-    {
-
-    }
-
-    /**
-     * 手机验证码登录
-     */
-    public function loginMobile($phone,$code)
-    {
-
-    }
-
-    /**
-     * 
-     */
-    private function loginUid($id)
-    {
-    	$authinfo = array(
-    		'id'     => '',
-    		'mobile' => '',
-    		'email'  => '',
-    		'wechat' => '',
-    		'avatar' => '',
-    	);
-    }
-
-    /**
-     * 
-     */
-    public static function wechatGetCode()
-    {
-        $callback = urlencode('http://www.inklego.com/wechat/callback');
-        $url = str_replace(['APPID','REDIRECT_URI','SCOPE'], 
-            [$this->appid,$callback,'snsapi_userinfo'], $this->getCodeUrl);
-        header("location: ".$url);
-    }
-
-    
+	/**
+	 * 刷新认证用户用户登录
+	 */
+	public static function authUserByUid($uid)
+	{
+		$userTable = DB::table('user');
+		$user = $userTable->where('user',$uid)->first();
+		if(empty($user)){
+			return false;
+		}
+		session('user',$user);
+	}
 }
